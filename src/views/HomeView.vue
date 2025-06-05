@@ -4,6 +4,6 @@
 
 <template>
   <main>
-
+    <p class="text-red-500">Coucou</p>
   </main>
 </template>
