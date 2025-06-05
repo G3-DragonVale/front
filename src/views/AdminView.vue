@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { Log } from '@/model/types.ts';
 import dayjs from 'dayjs';
+import type { Log } from '@/model/types';
 
 const logs: Log[] = [
     {
