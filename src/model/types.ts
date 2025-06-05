@@ -12,7 +12,7 @@ export interface User {
 
 export interface Log {
     id: number,
-    userId: number,
+    user: string,
     method: string,
     route: string,
     date: Date,
