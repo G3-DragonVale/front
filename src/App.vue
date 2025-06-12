@@ -5,10 +5,12 @@ import Navigation from '@/components/Navigation.vue';
 
 const route = useRoute();
 
-const isAuthenticated = ref(route.path !== '/login');
+const authenticationRoute = ref(['/login', '/signin']);
+
+const isAuthenticated = ref(!authenticationRoute.value.includes(route.path));
 
 watch((route), () => {
-  isAuthenticated.value = route.path !== '/login';
+  isAuthenticated.value = !authenticationRoute.value.includes(route.path);
 });
 </script>
 

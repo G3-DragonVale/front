@@ -57,7 +57,7 @@ const filteredLogs = computed(() => {
     }
 
     return result
-})
+});
 
 function methodColor(method: string) {
     switch (method) {
@@ -76,66 +76,61 @@ function methodColor(method: string) {
 </script>
 
 <template>
-    <div>
-        <h1>Admin</h1>
+    <div class="p-6">
+        <h2 class="text-xl font-semibold mb-4">Historique des actions</h2>
+        <div class="overflow-visible">
+            <table class="min-w-full text-sm text-left">
+                <thead class="bg-gray-100 text-gray-700 uppercase">
+                    <tr>
+                        <th class="px-4 py-2 w-1/4">Utilisateur</th>
+                        <th class="px-4 py-2 w-1/4 relative">
+                            Méthode
+                            <i class="fa-solid fa-filter hover:cursor-pointer" @click="showFilter = !showFilter"></i>
 
-        <div class="p-6">
-            <h2 class="text-xl font-semibold mb-4">Historique des actions</h2>
-            <div class="overflow-visible">
-                <table class="min-w-full text-sm text-left">
-                    <thead class="bg-gray-100 text-gray-700 uppercase">
-                        <tr>
-                            <th class="px-4 py-2 w-1/4">Utilisateur</th>
-                            <th class="px-4 py-2 w-1/4 relative">
-                                Méthode
-                                <i class="fa-solid fa-filter hover:cursor-pointer"
-                                    @click="showFilter = !showFilter"></i>
-
-                                <div v-if="showFilter"
-                                    class="absolute top-full left-0 mt-2 bg-white border rounded shadow z-10">
-                                    <ul class="text-sm w-32">
-                                        <li>
-                                            <button class="w-full text-left px-3 py-2 hover:bg-gray-100"
-                                                :class="{ 'bg-gray-100': selectedMethod === null }"
-                                                @click="selectMethod(null)">
-                                                Toutes
-                                            </button>
-                                        </li>
-                                        <li v-for="method in availableMethods" :key="method">
-                                            <button class="w-full text-left px-3 py-2 hover:bg-gray-100"
-                                                :class="{ 'bg-gray-100': selectedMethod === method }"
-                                                @click="selectMethod(method)">
-                                                {{ method }}
-                                            </button>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </th>
-                            <th class="px-4 py-2 max-w-1/4">Route</th>
-                            <th class="px-4 py-2 max-w-1/4">Date</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="(log, index) in filteredLogs" :key="index" class="border-b hover:bg-gray-50">
-                            <td class="px-4 py-4 w-1/4 break-all whitespace-normal">
-                                {{ log.user }}
-                            </td>
-                            <td class="px-4 py-4 w-1/4 break-all whitespace-normal">
-                                <span :class="methodColor(log.method)"
-                                    class="px-2 py-1 rounded text-xs font-medium text-white">
-                                    {{ log.method }}
-                                </span>
-                            </td>
-                            <td class="px-4 py-4 w-1/4 break-all whitespace-normal">
-                                {{ log.route }}
-                            </td>
-                            <td class="px-4 py-4 w-1/4 break-all whitespace-normal">
-                                {{ dayjs(log.date).format('DD/MM/YYYY HH:mm:ss') }}
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+                            <div v-if="showFilter"
+                                class="absolute top-full left-0 mt-2 bg-white border rounded shadow z-10">
+                                <ul class="text-sm w-32">
+                                    <li>
+                                        <button class="w-full text-left px-3 py-2 hover:bg-gray-100"
+                                            :class="{ 'bg-gray-100': selectedMethod === null }"
+                                            @click="selectMethod(null)">
+                                            Toutes
+                                        </button>
+                                    </li>
+                                    <li v-for="method in availableMethods" :key="method">
+                                        <button class="w-full text-left px-3 py-2 hover:bg-gray-100"
+                                            :class="{ 'bg-gray-100': selectedMethod === method }"
+                                            @click="selectMethod(method)">
+                                            {{ method }}
+                                        </button>
+                                    </li>
+                                </ul>
+                            </div>
+                        </th>
+                        <th class="px-4 py-2 max-w-1/4">Route</th>
+                        <th class="px-4 py-2 max-w-1/4">Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(log, index) in filteredLogs" :key="index" class="border-b hover:bg-gray-50">
+                        <td class="px-4 py-4 w-1/4 break-all whitespace-normal">
+                            {{ log.user }}
+                        </td>
+                        <td class="px-4 py-4 w-1/4 break-all whitespace-normal">
+                            <span :class="methodColor(log.method)"
+                                class="px-2 py-1 rounded text-xs font-medium text-white">
+                                {{ log.method }}
+                            </span>
+                        </td>
+                        <td class="px-4 py-4 w-1/4 break-all whitespace-normal">
+                            {{ log.route }}
+                        </td>
+                        <td class="px-4 py-4 w-1/4 break-all whitespace-normal">
+                            {{ dayjs(log.date).format('DD/MM/YYYY HH:mm:ss') }}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
 </template>

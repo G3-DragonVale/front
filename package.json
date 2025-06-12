@@ -12,8 +12,11 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.8",
-    "tailwindcss": "^4.1.8",
+    "axios": "^1.9.0",
     "dayjs": "^1.11.13",
+    "pinia": "^3.0.3",
+    "tailwindcss": "^4.1.8",
+    "tailwindcss-animation-delay": "^2.0.2",
     "vue": "^3.5.13",
     "vue-router": "^4.5.0"
   },
