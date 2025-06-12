@@ -35,10 +35,13 @@ router.beforeEach((to, from, next) => {
   const auth = useAuthStore();
   auth.initialize();
   const publicPages = ['/login', '/signin'];
+  const adminPages = ['/monitoring'];
   const authRequired = !publicPages.includes(to.path);
 
   if (authRequired && !auth.isAuthenticated) {
     return next('/login');
+  } else if (adminPages.includes(to.path) && !auth.isAdmin) {
+    return next('/');
   }
   next();
 });

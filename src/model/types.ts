@@ -8,6 +8,7 @@ export interface User {
     id: number,
     nom: string,
     prenom: string,
+    role?: string,
 }
 
 export interface Log {
@@ -16,4 +17,10 @@ export interface Log {
     method: string,
     route: string,
     date: Date,
+}
+
+export interface ErrorResponse {
+    message: string;
+    error: string;
+    statusCode: number;
 }

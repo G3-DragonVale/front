@@ -1,16 +1,21 @@
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 import { apiService } from '@/services/api';
+import type { ErrorResponse, User } from '@/model/types';
 
 export const useAuthStore = defineStore('auth', () => {
     const AUTH_TOKEN_KEY = 'userToken';
 
-    const user = ref(null);
+    const user = ref<User | null>(null);
     const token = ref<string | null>(localStorage.getItem(AUTH_TOKEN_KEY) || null);
-    const error = ref<string | null>(null);
+    const error = ref<ErrorResponse | null>(null);
     const isLoading = ref(false);
 
     const isAuthenticated = computed(() => !!token.value);
+
+    const isAdmin = computed(() => {
+        return user.value?.role === 'ADMIN';
+    })
 
     function initialize() {
         token.value = localStorage.getItem(AUTH_TOKEN_KEY);
@@ -31,10 +36,11 @@ export const useAuthStore = defineStore('auth', () => {
         error.value = null;
 
         try {
-            await apiService.post('/user/register', { username, password });
-            // Optionally auto-login or redirect after registration
+            await apiService.post('/auth/register', { nickname: username, mdp: password });
+            await login(username, password);
         } catch (e: any) {
-            error.value = e?.response?.data?.message || 'Erreur lors de la création du compte.';
+            error.value = e?.response?.data || null;
+            console.log(error.value);
             throw e;
         } finally {
             isLoading.value = false;
@@ -46,14 +52,15 @@ export const useAuthStore = defineStore('auth', () => {
         error.value = null;
 
         try {
-            const data = await apiService.post<{ token: string; user?: any }>('/user/login', { username, password });
-            setToken(data.token);
-            user.value = data.user || null;
+            const data = await apiService.post('/auth/login', { nickname: username, mdp: password });
+            console.log(data);
+            // setToken(data.token);
+            // user.value = data.user || null;
         } catch (e: any) {
             error.value = e?.response?.data?.message || 'Erreur lors de la connexion.';
             throw e;
         } finally {
-            // isLoading.value = false;
+            isLoading.value = false;
         }
     }
 
@@ -62,5 +69,5 @@ export const useAuthStore = defineStore('auth', () => {
         user.value = null;
     }
 
-    return { user, token, error, isLoading, isAuthenticated, initialize, register, login, logout };
+    return { user, token, error, isLoading, isAuthenticated, isAdmin, initialize, register, login, logout };
 })

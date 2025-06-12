@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
-import { apiService } from '@/services/api';
+import { useAuthStore } from '@/stores/auth';
+
+const authStore = useAuthStore();
 
 const username = ref<string>('');
 const password = ref<string>('');
@@ -14,7 +16,7 @@ async function register() {
     }
 
     try {
-        // await apiService.post(username.value, password.value);
+        await authStore.register(username.value, password.value);
         console.log('Envoi des données au serveur', {
             username: username.value,
             password: password.value

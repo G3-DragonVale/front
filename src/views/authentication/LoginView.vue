@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 import Loader from '@/components/Loader.vue';
 
@@ -11,7 +11,6 @@ const error = ref<string>('');
 
 async function login() {
     try {
-        // await apiService.post(username.value, password.value);
         await authStore.login(username.value, password.value);
         console.log('Envoi des données au serveur', {
             username: username.value,
@@ -28,9 +27,9 @@ async function login() {
 <template>
     <div class="flex items-center justify-center bg-gray-100">
         <div class="bg-white p-8 rounded shadow-md w-96">
-            <Loader message="Chargement..." color="blue-600" />
             <h1 class="text-2xl font-bold mb-6 text-center">Connexion</h1>
-            <form @submit.prevent="login">
+            <Loader message="" color="blue-600" v-if="authStore.isLoading" />
+            <form @submit.prevent="login" v-else>
                 <div class="mb-4">
                     <label for="username" class="block text-sm font-medium text-gray-700">Nom d'utilisateur</label>
                     <input v-model="username" type="text" id="username" autocomplete="username"
@@ -58,10 +57,10 @@ async function login() {
                 </button>
             </form>
         </div>
-        <div v-if="authStore.isLoading"
+        <!-- <div v-if="authStore.isLoading"
             class="fixed top-0 right-0 h-screen w-screen bg-black/75 flex items-center justify-center">
             <Loader message="Chargement..." color="blue-600" />
-        </div>
+        </div> -->
     </div>
 
 </template>
