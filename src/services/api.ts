@@ -5,7 +5,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL as string;
 const ENCRYPTION_KEY = import.meta.env.VITE_ENCRYPTION_KEY as string;
 
 const api = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: API_BASE_URL || 'http://localhost:3001',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -45,14 +45,14 @@ const decryptApiResponse = <T>(response: T | EncryptedResponse): T => {
   if (response && typeof response === 'object' && 'encrypted' in response && response.encrypted) {
     const bytes = CryptoJS.AES.decrypt(response.data as string, ENCRYPTION_KEY);
     const decryptedData = bytes.toString(CryptoJS.enc.Utf8);
-    
+
     try {
       return JSON.parse(decryptedData) as T;
     } catch (e) {
       return decryptedData as unknown as T;
     }
   }
-  
+
   return response as T;
 };
 

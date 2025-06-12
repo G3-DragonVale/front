@@ -1,11 +1,13 @@
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
+import { useRouter } from 'vue-router';
 import { apiService } from '@/services/api';
-import type { ErrorResponse, User } from '@/model/types';
+import type { AuthResponse, ErrorResponse, User } from '@/model/types';
 
 export const useAuthStore = defineStore('auth', () => {
     const AUTH_TOKEN_KEY = 'userToken';
 
+    const router = useRouter();
     const user = ref<User | null>(null);
     const token = ref<string | null>(localStorage.getItem(AUTH_TOKEN_KEY) || null);
     const error = ref<ErrorResponse | null>(null);
@@ -40,8 +42,7 @@ export const useAuthStore = defineStore('auth', () => {
             await login(username, password);
         } catch (e: any) {
             error.value = e?.response?.data || null;
-            console.log(error.value);
-            throw e;
+            throw error.value;
         } finally {
             isLoading.value = false;
         }
@@ -52,15 +53,15 @@ export const useAuthStore = defineStore('auth', () => {
         error.value = null;
 
         try {
-            const data = await apiService.post('/auth/login', { nickname: username, mdp: password });
-            console.log(data);
-            // setToken(data.token);
-            // user.value = data.user || null;
+            const data: AuthResponse = await apiService.post('/auth/login', { nickname: username, mdp: password });
+            setToken(data.access_token);
+            user.value = data.user || null;
         } catch (e: any) {
-            error.value = e?.response?.data?.message || 'Erreur lors de la connexion.';
-            throw e;
+            error.value = e?.response?.data || null;
+            throw error.value;
         } finally {
             isLoading.value = false;
+            router.push('/');
         }
     }
 

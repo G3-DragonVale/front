@@ -1,38 +1,38 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
 import { useAuthStore } from '@/stores/auth';
+import type { ErrorResponse } from '@/model/types';
 
 const authStore = useAuthStore();
 
 const username = ref<string>('');
 const password = ref<string>('');
 const confirmPassword = ref<string>('');
-const error = ref<string>('');
+const usernameError = ref<string>('');
+const passwordError = ref<string>('');
 
 async function register() {
     if (password.value !== confirmPassword.value) {
-        error.value = 'Les mots de passe doivent correspondre';
+        passwordError.value = 'Les mots de passe doivent correspondre';
         return;
     }
 
     try {
         await authStore.register(username.value, password.value);
-        console.log('Envoi des données au serveur', {
-            username: username.value,
-            password: password.value
-        });
         console.log('Compte créé avec succès');
-    } catch (e: any) {
-        error.value = 'Erreur lors de la création du compte. Veuillez réessayer.';
+    } catch (e: ErrorResponse | any) {
+        if (e.statusCode === 409) {
+            usernameError.value = e.message;
+        }
         console.error(e);
     }
 }
 
 watch(confirmPassword, () => {
     if (confirmPassword.value !== password.value) {
-        error.value = 'Les mots de passe doivent correspondre';
+        passwordError.value = 'Les mots de passe doivent correspondre';
     } else {
-        error.value = '';
+        passwordError.value = '';
     }
 });
 </script>
@@ -46,27 +46,30 @@ watch(confirmPassword, () => {
                     <label for="username" class="block text-sm font-medium text-gray-700">
                         Nom d'utilisateur *
                     </label>
-                    <input v-model="username" type="text" id="username"
+                    <input v-model="username" type="text" id="username" autocomplete="username"
                         class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                        required />
+                        :class="[usernameError ? 'border-red-600' : 'border-gray-300']" required />
+                    <p v-if="usernameError" class="text-xs text-red-600 mt-1">
+                        {{ usernameError }}
+                    </p>
                 </div>
                 <div class="mb-4">
                     <label for="password" class="block text-sm font-medium text-gray-700">
                         Mot de passe *
                     </label>
-                    <input v-model="password" type="password" id="password"
-                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                        required />
+                    <input v-model="password" type="password" id="password" autocomplete="new-password"
+                        class="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        :class="[passwordError ? 'border-red-600' : 'border-gray-300']" required />
                 </div>
                 <div class="mb-2">
                     <label for="verify-password" class="block text-sm font-medium text-gray-700">
                         Confirmer mot de passe *
                     </label>
-                    <input v-model="confirmPassword" type="password" id="verify-password"
-                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                        required />
-                    <p v-if="error" class="text-xs text-red-600 mt-1">
-                        {{ error }}
+                    <input v-model="confirmPassword" type="password" id="verify-password" autocomplete="new-password"
+                        class="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        :class="[passwordError ? 'border-red-600' : 'border-gray-300']" required />
+                    <p v-if="passwordError" class="text-xs text-red-600 mt-1">
+                        {{ passwordError }}
                     </p>
                 </div>
                 <div class="mb-6">

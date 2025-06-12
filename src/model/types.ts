@@ -1,3 +1,8 @@
+enum Role {
+    USER = 'USER',
+    ADMIN = 'ADMIN'
+}
+
 export interface Dragon {
     id: number,
     nom: string,
@@ -6,9 +11,8 @@ export interface Dragon {
 
 export interface User {
     id: number,
-    nom: string,
-    prenom: string,
-    role?: string,
+    nickname: string,
+    role: Role,
 }
 
 export interface Log {
@@ -23,4 +27,9 @@ export interface ErrorResponse {
     message: string;
     error: string;
     statusCode: number;
+}
+
+export interface AuthResponse {
+    access_token: string;
+    user: User;
 }
