@@ -1,6 +1,8 @@
 import axios, { type AxiosRequestConfig, type InternalAxiosRequestConfig } from 'axios';
+import * as CryptoJS from 'crypto-js';
 
-const API_BASE_URL = 'http://localhost:3001';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL as string;
+const ENCRYPTION_KEY = import.meta.env.VITE_ENCRYPTION_KEY as string;
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -9,6 +11,11 @@ const api = axios.create({
     'Content-Type': 'application/json',
   },
 });
+
+interface EncryptedResponse {
+  encrypted: boolean;
+  data: string;
+}
 
 const AUTH_TOKEN_KEY = 'userToken';
 
@@ -34,11 +41,26 @@ api.interceptors.request.use(
   }
 );
 
+const decryptApiResponse = <T>(response: T | EncryptedResponse): T => {
+  if (response && typeof response === 'object' && 'encrypted' in response && response.encrypted) {
+    const bytes = CryptoJS.AES.decrypt(response.data as string, ENCRYPTION_KEY);
+    const decryptedData = bytes.toString(CryptoJS.enc.Utf8);
+    
+    try {
+      return JSON.parse(decryptedData) as T;
+    } catch (e) {
+      return decryptedData as unknown as T;
+    }
+  }
+  
+  return response as T;
+};
+
 export const apiService = {
   get: async <T>(url: string, config?: AxiosRequestConfig): Promise<T> => {
     try {
-      const response = (await api.get<T>(url, config));
-      return response.data;
+      const response = (await api.get<T | EncryptedResponse>(url, config));
+      return decryptApiResponse<T>(response.data);
     } catch (error) {
       console.error(`GET ${url} failed`, error);
       throw error;
@@ -47,8 +69,8 @@ export const apiService = {
 
   post: async <T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> => {
     try {
-      const response = await api.post<T>(url, data, config);
-      return response.data;
+      const response = (await api.post<T | EncryptedResponse>(url, data, config));
+      return decryptApiResponse<T>(response.data);
     } catch (error) {
       console.error(`POST ${url} failed`, error);
       throw error;
@@ -57,8 +79,8 @@ export const apiService = {
 
   put: async <T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> => {
     try {
-      const response = await api.put<T>(url, data, config);
-      return response.data;
+      const response = (await api.put<T | EncryptedResponse>(url, data, config));
+      return decryptApiResponse<T>(response.data);
     } catch (error) {
       console.error(`PUT ${url} failed`, error);
       throw error;
@@ -67,8 +89,8 @@ export const apiService = {
 
   delete: async <T>(url: string, config?: AxiosRequestConfig): Promise<T> => {
     try {
-      const response = await api.delete<T>(url, config);
-      return response.data;
+      const response = (await api.delete<T | EncryptedResponse>(url, config));
+      return decryptApiResponse<T>(response.data);
     } catch (error) {
       console.error(`DELETE ${url} failed`, error);
       throw error;

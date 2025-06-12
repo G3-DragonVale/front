@@ -6,6 +6,10 @@
     },
     {
       "path": "./tsconfig.app.json"
-    }
-  ]
+    },
+    
+  ],
+  "compilerOptions": {
+    "module": "esnext",
+  }
 }
