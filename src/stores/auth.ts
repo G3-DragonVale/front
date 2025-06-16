@@ -8,7 +8,8 @@ export const useAuthStore = defineStore('auth', () => {
     const AUTH_TOKEN_KEY = 'userToken';
 
     const router = useRouter();
-    const user = ref<User | null>(null);
+    const userData = localStorage.getItem('user');
+    const user = ref<User | null>(userData ? JSON.parse(userData) : null);
     const token = ref<string | null>(localStorage.getItem(AUTH_TOKEN_KEY) || null);
     const error = ref<ErrorResponse | null>(null);
     const isLoading = ref(false);
@@ -30,6 +31,16 @@ export const useAuthStore = defineStore('auth', () => {
             localStorage.setItem(AUTH_TOKEN_KEY, newToken);
         } else {
             localStorage.removeItem(AUTH_TOKEN_KEY);
+        }
+    }
+
+    function setUser(newUser: User | null) {
+        user.value = newUser;
+
+        if (newUser) {
+            localStorage.setItem('user', JSON.stringify(newUser));
+        } else {
+            localStorage.removeItem('user');
         }
     }
 
@@ -55,7 +66,7 @@ export const useAuthStore = defineStore('auth', () => {
         try {
             const data: AuthResponse = await apiService.post('/auth/login', { nickname: username, mdp: password });
             setToken(data.access_token);
-            user.value = data.user || null;
+            setUser(data.user);
         } catch (e: any) {
             error.value = e?.response?.data || null;
             throw error.value;

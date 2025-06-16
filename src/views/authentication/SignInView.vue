@@ -41,7 +41,8 @@ watch(confirmPassword, () => {
     <div class="flex items-center justify-center bg-gray-100">
         <div class="bg-white p-8 rounded shadow-md w-96">
             <h1 class="text-2xl font-bold mb-6 text-center">Création de compte</h1>
-            <form @submit.prevent="register">
+            <Loader message="" color="blue-600" v-if="authStore.isLoading" />
+            <form @submit.prevent="register" v-else>
                 <div class="mb-4">
                     <label for="username" class="block text-sm font-medium text-gray-700">
                         Nom d'utilisateur *

@@ -1,3 +1,4 @@
+import { useAuthStore } from '@/stores/auth';
 import axios, { type AxiosRequestConfig, type InternalAxiosRequestConfig } from 'axios';
 import * as CryptoJS from 'crypto-js';
 
@@ -37,6 +38,18 @@ api.interceptors.request.use(
   },
   (error) => {
     console.error("Erreur de configuration de la requête Axios", error);
+    return Promise.reject(error);
+  }
+);
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      const auth = useAuthStore();
+      auth.logout();
+      window.location.href = '/login';
+    }
     return Promise.reject(error);
   }
 );

@@ -7,7 +7,7 @@ export interface Dragon {
     id: number,
     nom: string,
     rarete: string,
-    img_url: string,
+    lien: string,
 }
 
 export interface User {
@@ -18,10 +18,12 @@ export interface User {
 
 export interface Log {
     id: number,
-    user: string,
+    userId: number,
     method: string,
     route: string,
     date: Date,
+    body: Object,
+    ip: string,
 }
 
 export interface ErrorResponse {
