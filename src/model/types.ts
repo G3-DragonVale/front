@@ -7,7 +7,7 @@ export interface Dragon {
     id: number,
     nom: string,
     rarete: string,
-    lien: string,
+    lien?: string,
 }
 
 export interface User {

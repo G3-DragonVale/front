@@ -5,6 +5,7 @@ import type { Dragon } from '@/model/types';
 
 export const useDragonStore = defineStore('dragon', () => {
     const dragons = ref<Dragon[] | null>(null);
+    const myDragons = ref<Dragon[] | null>(null);
     const isLoading = ref(false);
 
     async function fetchDragons() {
@@ -21,5 +22,19 @@ export const useDragonStore = defineStore('dragon', () => {
         }
     }
 
-    return { fetchDragons, isLoading, dragons };
+    async function fetchDragonsByUserId(userId: string) {
+        isLoading.value = true;
+
+        try {
+            const response = await apiService.get<Dragon[]>(`/dragons/user/${userId}`);
+            myDragons.value = response;
+        } catch (error) {
+            console.error('Error fetching dragons by user ID:', error);
+            throw error;
+        } finally {
+            isLoading.value = false;
+        }
+    }
+
+    return { fetchDragons, fetchDragonsByUserId, isLoading, dragons };
 })

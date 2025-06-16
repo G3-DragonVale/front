@@ -23,9 +23,9 @@ onMounted(async () => {
 <template>
   <div class="p-4" v-if="!dragonStore.isLoading">
     <input type="text" v-model="input" placeholder="Search dragons..."
-      class="w-full p-3 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 mb-6 shadow-sm" />
+      class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" />
 
-    <div v-if="filteredList && filteredList.length" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+    <div v-if="filteredList && filteredList.length" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mt-4">
       <div v-for="dragon in filteredList" :key="dragon.id">
         <DragonCard :dragon="dragon" />
       </div>
