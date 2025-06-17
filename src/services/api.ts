@@ -1,9 +1,8 @@
 import { useAuthStore } from '@/stores/auth';
+import { getAESKey, performHandshake } from '@/utils/cryptoSession';
 import axios, { type AxiosRequestConfig, type InternalAxiosRequestConfig } from 'axios';
-import * as CryptoJS from 'crypto-js';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL as string;
-const ENCRYPTION_KEY = import.meta.env.VITE_ENCRYPTION_KEY as string;
 
 const api = axios.create({
   baseURL: API_BASE_URL || 'http://localhost:3001',
@@ -24,6 +23,7 @@ api.interceptors.request.use(
   async (config): Promise<InternalAxiosRequestConfig> => {
     try {
       const token = localStorage.getItem(AUTH_TOKEN_KEY) || null;
+      const sessionId = localStorage.getItem('sessionId') || null;
 
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
@@ -31,6 +31,13 @@ api.interceptors.request.use(
       } else {
         console.log('Aucun token trouvé, requête envoyée sans Authorization pour:', config.url);
       }
+      if (sessionId) {
+        config.headers['x-session-id'] = sessionId;
+      }
+      else {
+        await performHandshake(apiService);
+      }
+
     } catch (error) {
       console.error("Erreur lors de la récupération du token depuis localStorage", error);
     }
@@ -42,8 +49,47 @@ api.interceptors.request.use(
   }
 );
 
+
 api.interceptors.response.use(
-  (response) => response,
+  async (response) => {
+    const data = response.data;
+    if (data && data.encrypted && data.data) {
+      const aesKey = getAESKey();
+      if (!aesKey) {
+        return response;
+      }
+
+      try {
+        const payload = JSON.parse(data.data); // { iv, data }
+        const iv = Uint8Array.from(atob(payload.iv), c => c.charCodeAt(0));
+        const encryptedData = Uint8Array.from(atob(payload.data), c => c.charCodeAt(0));
+
+        const cryptoKey = await window.crypto.subtle.importKey(
+          'raw',
+          aesKey,
+          { name: 'AES-CBC' },
+          false,
+          ['decrypt']
+        );
+
+        const decrypted = await window.crypto.subtle.decrypt(
+          { name: 'AES-CBC', iv },
+          cryptoKey,
+          encryptedData
+        );
+
+        const decoder = new TextDecoder();
+        const decryptedText = decoder.decode(decrypted);
+        const parsed = JSON.parse(decryptedText);
+        response.data = parsed;
+      } catch (err) {
+        return Promise.reject(new Error("Erreur de déchiffrement"));
+      }
+    }
+
+    return response;
+
+  },
   (error) => {
     if (error.response && error.response.status === 401) {
       const auth = useAuthStore();
@@ -54,26 +100,12 @@ api.interceptors.response.use(
   }
 );
 
-const decryptApiResponse = <T>(response: T | EncryptedResponse): T => {
-  if (response && typeof response === 'object' && 'encrypted' in response && response.encrypted) {
-    const bytes = CryptoJS.AES.decrypt(response.data as string, ENCRYPTION_KEY);
-    const decryptedData = bytes.toString(CryptoJS.enc.Utf8);
-
-    try {
-      return JSON.parse(decryptedData) as T;
-    } catch (e) {
-      return decryptedData as unknown as T;
-    }
-  }
-
-  return response as T;
-};
 
 export const apiService = {
   get: async <T>(url: string, config?: AxiosRequestConfig): Promise<T> => {
     try {
       const response = (await api.get<T | EncryptedResponse>(url, config));
-      return decryptApiResponse<T>(response.data);
+      return response.data as T;
     } catch (error) {
       console.error(`GET ${url} failed`, error);
       throw error;
@@ -83,7 +115,7 @@ export const apiService = {
   post: async <T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> => {
     try {
       const response = (await api.post<T | EncryptedResponse>(url, data, config));
-      return decryptApiResponse<T>(response.data);
+      return response.data as T;
     } catch (error) {
       console.error(`POST ${url} failed`, error);
       throw error;
@@ -93,7 +125,7 @@ export const apiService = {
   put: async <T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> => {
     try {
       const response = (await api.put<T | EncryptedResponse>(url, data, config));
-      return decryptApiResponse<T>(response.data);
+      return response.data as T;
     } catch (error) {
       console.error(`PUT ${url} failed`, error);
       throw error;
@@ -103,7 +135,7 @@ export const apiService = {
   delete: async <T>(url: string, config?: AxiosRequestConfig): Promise<T> => {
     try {
       const response = (await api.delete<T | EncryptedResponse>(url, config));
-      return decryptApiResponse<T>(response.data);
+      return response.data as T;
     } catch (error) {
       console.error(`DELETE ${url} failed`, error);
       throw error;

@@ -3,6 +3,7 @@ import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { apiService } from '@/services/api';
 import type { AuthResponse, ErrorResponse, User } from '@/model/types';
+import { performHandshake } from '@/utils/cryptoSession';
 
 export const useAuthStore = defineStore('auth', () => {
     const AUTH_TOKEN_KEY = 'userToken';
@@ -64,6 +65,7 @@ export const useAuthStore = defineStore('auth', () => {
         error.value = null;
 
         try {
+            await performHandshake(apiService);
             const data: AuthResponse = await apiService.post('/auth/login', { nickname: username, mdp: password });
             setToken(data.access_token);
             setUser(data.user);
