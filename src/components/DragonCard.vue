@@ -6,8 +6,6 @@ const props = defineProps({
   dragon: Object as PropType<Dragon>,
 });
 
-console.log("DragonCard props:", props.dragon);
-
 function dragonColor(rarete: string) {
   switch (rarete) {
     case "COMMUN": return "bg-grey-500/40";
@@ -28,7 +26,7 @@ function dragonColor(rarete: string) {
     </div>
 
     <div class="flex items-center justify-center h-16">
-      <p class="text-lg font-semibold uppercase text-gray-800">{{ props.dragon.nom }}</p>
+      <p class="text-md font-semibold uppercase text-gray-800">{{ props.dragon.nom }}</p>
     </div>
   </div>
 

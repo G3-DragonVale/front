@@ -33,11 +33,9 @@ api.interceptors.request.use(
       }
       if (sessionId) {
         config.headers['x-session-id'] = sessionId;
-      }
-      else {
+      } else {
         await performHandshake(apiService);
       }
-
     } catch (error) {
       console.error("Erreur lors de la récupération du token depuis localStorage", error);
     }
@@ -55,6 +53,7 @@ api.interceptors.response.use(
     const data = response.data;
     if (data && data.encrypted && data.data) {
       const aesKey = getAESKey();
+
       if (!aesKey) {
         return response;
       }

@@ -11,8 +11,13 @@ const input = ref("");
 
 const filteredList = computed(() => {
   return dragonStore.dragons?.filter((dragon: Dragon) =>
-    dragon.nom.toLowerCase().includes(input.value.toLowerCase())
+    dragon.nom.toLowerCase().startsWith(input.value.toLowerCase())
   );
+});
+
+const dragonsFound = computed(() => {
+  if (!filteredList.value) return "Aucun dragon trouvé";
+  return filteredList.value?.length > 1 ? `${filteredList.value.length} dragons trouvés` : `${filteredList.value.length} dragon trouvé`;
 });
 
 onMounted(async () => {
@@ -22,17 +27,28 @@ onMounted(async () => {
 
 <template>
   <div class="p-4" v-if="!dragonStore.isLoading">
-    <input type="text" v-model="input" placeholder="Search dragons..."
-      class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" />
+    <h2 class="text-xl font-semibold mb-4">Tous les dragons</h2>
 
-    <div v-if="filteredList && filteredList.length" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mt-4">
-      <div v-for="dragon in filteredList" :key="dragon.id">
-        <DragonCard :dragon="dragon" />
+    <div v-if="!dragonStore.isError">
+      <input type="text" v-model="input" placeholder="Chercher un dragon..."
+        class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" />
+
+      <div v-if="filteredList && filteredList.length">
+        <h3 class="text-lg font-semibold my-4">{{ dragonsFound }}</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
+          <div v-for="dragon in filteredList" :key="dragon.id">
+            <DragonCard :dragon="dragon" />
+          </div>
+        </div>
+      </div>
+
+      <div v-else class="mt-4 text-center font-medium">
+        <p>Aucun dragon trouvé</p>
       </div>
     </div>
 
-    <div v-else class="mt-4 text-center font-medium">
-      <p>Aucun dragon trouvé !</p>
+    <div v-else class="mt-4 text-red-500 text-center">
+      <p>Une erreur est survenue lors du chargement des dragons</p>
     </div>
   </div>
 

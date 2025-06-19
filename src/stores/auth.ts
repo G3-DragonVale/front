@@ -65,10 +65,10 @@ export const useAuthStore = defineStore('auth', () => {
         error.value = null;
 
         try {
+            await performHandshake(apiService);
             const data: AuthResponse = await apiService.post('/auth/login', { nickname: username, mdp: password });
             setToken(data.access_token);
             setUser(data.user);
-            await performHandshake(apiService);
         } catch (e: any) {
             error.value = e?.response?.data || null;
             throw error.value;

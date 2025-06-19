@@ -5,17 +5,20 @@ import type { Dragon } from '@/model/types';
 
 export const useDragonStore = defineStore('dragon', () => {
     const dragons = ref<Dragon[] | null>(null);
-    const myDragons = ref<Dragon[] | null>(null);
+    const userDragons = ref<Dragon[] | null>(null);
     const isLoading = ref(false);
+    const isError = ref(false);
 
     async function fetchDragons() {
         isLoading.value = true;
+        isError.value = false;
 
         try {
             const response = await apiService.get<Dragon[]>('/dragons');
-            dragons.value = response;
+            dragons.value = orderByDragonName(response);
         } catch (error) {
             console.error('Error fetching dragons:', error);
+            isError.value = true;
             throw error;
         } finally {
             isLoading.value = false;
@@ -24,17 +27,24 @@ export const useDragonStore = defineStore('dragon', () => {
 
     async function fetchDragonsByUserId(userId: string) {
         isLoading.value = true;
+        isError.value = false;
 
         try {
-            const response = await apiService.get<Dragon[]>(`/dragons/user/${userId}`);
-            myDragons.value = response;
+            const response = await apiService.get<Dragon[]>(`/dragons/ByUserId/${userId}`);
+            userDragons.value = orderByDragonName(response);
         } catch (error) {
             console.error('Error fetching dragons by user ID:', error);
+            isError.value = true;
             throw error;
         } finally {
             isLoading.value = false;
         }
     }
 
-    return { fetchDragons, fetchDragonsByUserId, isLoading, dragons };
+    function orderByDragonName(dragonsList: Dragon[] | null) {
+        if (!dragonsList) return [];
+        return [...dragonsList].sort((a, b) => a.nom.localeCompare(b.nom));
+    }
+
+    return { dragons, userDragons, isLoading, isError, fetchDragons, fetchDragonsByUserId };
 })

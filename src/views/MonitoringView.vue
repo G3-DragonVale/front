@@ -7,37 +7,6 @@ import Loader from '@/components/Loader.vue';
 
 const logStore = useLogStore();
 
-// const logs = ref<Log[]>([
-//     {
-//         id: 1,
-//         user: 'Michel',
-//         method: 'POST',
-//         route: '/api/create',
-//         date: new Date('2025-06-03T16:55:35'),
-//     },
-//     {
-//         id: 2,
-//         user: 'Jeanne',
-//         method: 'DELETE',
-//         route: '/api/delete/1',
-//         date: new Date('2025-06-03T17:12:41'),
-//     },
-//     {
-//         id: 3,
-//         user: 'Cess',
-//         method: 'GET',
-//         route: '/api/get/1',
-//         date: new Date(),
-//     },
-//     {
-//         id: 4,
-//         user: 'Cess',
-//         method: 'PUT',
-//         route: '/api/delete/1',
-//         date: new Date(),
-//     },
-// ]);
-
 const showFilter = ref(false)
 const selectedMethod = ref<string | null>(null)
 
@@ -82,63 +51,72 @@ onMounted(async () => {
 <template>
     <div class="p-4" v-if="!logStore.isLoading">
         <h2 class="text-xl font-semibold mb-4">Historique des actions</h2>
-        <div class="overflow-visible">
-            <table class="min-w-full text-sm text-left">
-                <thead class="bg-gray-100 text-gray-700 uppercase">
-                    <tr>
-                        <th class="px-4 py-2 w-1/5">Utilisateur</th>
-                        <th class="px-4 py-2 w-1/5 relative">
-                            Méthode
-                            <i class="fa-solid fa-filter hover:cursor-pointer" @click="showFilter = !showFilter"></i>
 
-                            <div v-if="showFilter"
-                                class="absolute top-full left-0 mt-2 bg-white border rounded shadow z-10">
-                                <ul class="text-sm w-32">
-                                    <li>
-                                        <button class="w-full text-left px-3 py-2 hover:bg-gray-100"
-                                            :class="{ 'bg-gray-100': selectedMethod === null }"
-                                            @click="selectMethod(null)">
-                                            Toutes
-                                        </button>
-                                    </li>
-                                    <li v-for="method in availableMethods" :key="method">
-                                        <button class="w-full text-left px-3 py-2 hover:bg-gray-100"
-                                            :class="{ 'bg-gray-100': selectedMethod === method }"
-                                            @click="selectMethod(method)">
-                                            {{ method }}
-                                        </button>
-                                    </li>
-                                </ul>
-                            </div>
-                        </th>
-                        <th class="px-4 py-2 max-w-1/5">Route</th>
-                        <th class="px-4 py-2 max-w-1/5">Body</th>
-                        <th class="px-4 py-2 max-w-1/5">Date</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="(log, index) in filteredLogs" :key="index" class="border-b hover:bg-gray-50">
-                        <td class="px-4 py-4 w-1/5 break-all whitespace-normal">
-                            {{ log.userId ? log.userId : 'Utilisateur inconnu' }}
-                        </td>
-                        <td class="px-4 py-4 w-1/5 break-all whitespace-normal">
-                            <span :class="methodColor(log.method)"
-                                class="px-2 py-1 rounded text-xs font-medium text-white">
-                                {{ log.method }}
-                            </span>
-                        </td>
-                        <td class="px-4 py-4 w-1/5 break-all whitespace-normal">
-                            {{ log.route }}
-                        </td>
-                        <td class="px-4 py-4 w-1/5 break-all whitespace-normal text-xs">
-                            {{ log.body ? JSON.stringify(log.body) : 'Aucune donnée' }}
-                        </td>
-                        <td class="px-4 py-4 w-1/5 break-all whitespace-normal">
-                            {{ dayjs(log.date).format('DD/MM/YYYY HH:mm:ss') }}
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+        <div v-if="!logStore.isError" class="mb-4">
+            <p class="text-sm text-gray-600">Nombre d'actions : {{ logStore.logs?.length }}</p>
+            <div class="overflow-visible">
+                <table class="min-w-full text-sm text-left">
+                    <thead class="bg-gray-100 text-gray-700 uppercase">
+                        <tr>
+                            <th class="px-4 py-2 w-1/5">Utilisateur</th>
+                            <th class="px-4 py-2 w-1/5 relative">
+                                Méthode
+                                <i class="fa-solid fa-filter hover:cursor-pointer"
+                                    @click="showFilter = !showFilter"></i>
+
+                                <div v-if="showFilter"
+                                    class="absolute top-full left-0 mt-2 bg-white border rounded shadow z-10">
+                                    <ul class="text-sm w-32">
+                                        <li>
+                                            <button class="w-full text-left px-3 py-2 hover:bg-gray-100"
+                                                :class="{ 'bg-gray-100': selectedMethod === null }"
+                                                @click="selectMethod(null)">
+                                                Toutes
+                                            </button>
+                                        </li>
+                                        <li v-for="method in availableMethods" :key="method">
+                                            <button class="w-full text-left px-3 py-2 hover:bg-gray-100"
+                                                :class="{ 'bg-gray-100': selectedMethod === method }"
+                                                @click="selectMethod(method)">
+                                                {{ method }}
+                                            </button>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </th>
+                            <th class="px-4 py-2 max-w-1/5">Route</th>
+                            <th class="px-4 py-2 max-w-1/5">Body</th>
+                            <th class="px-4 py-2 max-w-1/5">Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="(log, index) in filteredLogs" :key="index" class="border-b hover:bg-gray-50">
+                            <td class="px-4 py-4 w-1/5 break-all whitespace-normal">
+                                {{ log.userId ? log.userId : 'Utilisateur inconnu' }}
+                            </td>
+                            <td class="px-4 py-4 w-1/5 break-all whitespace-normal">
+                                <span :class="methodColor(log.method)"
+                                    class="px-2 py-1 rounded text-xs font-medium text-white">
+                                    {{ log.method }}
+                                </span>
+                            </td>
+                            <td class="px-4 py-4 w-1/5 break-all whitespace-normal">
+                                {{ log.route }}
+                            </td>
+                            <td class="px-4 py-4 w-1/5 break-all whitespace-normal text-xs">
+                                {{ log.body ? JSON.stringify(log.body) : 'Aucune donnée' }}
+                            </td>
+                            <td class="px-4 py-4 w-1/5 break-all whitespace-normal">
+                                {{ dayjs(log.date).format('DD/MM/YYYY HH:mm:ss') }}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div v-else class="mt-4 text-red-500 text-center">
+            <p>Une erreur est survenue lors du chargement des logs</p>
         </div>
     </div>
 
