@@ -35,9 +35,8 @@ function chunkString(str: string, size: number): string {
 }
 
 export async function performHandshake(api: any): Promise<void> {
-  if (!rsaKeyPair) {
-    await generateRSAKeyPair();
-  }
+  await loadKeyPairFromStorage();
+  if (!rsaKeyPair) await generateRSAKeyPair();
   if (!sessionId) {
     await generateSessionId();
   }
@@ -58,6 +57,7 @@ export async function performHandshake(api: any): Promise<void> {
   );
 
   aesKey = new Uint8Array(decrypted);
+  storeAESKey(aesKey);
 }
 
 export function getAESKey(): Uint8Array | null {
@@ -66,4 +66,78 @@ export function getAESKey(): Uint8Array | null {
 
 export function getSessionId(): string | null {
   return sessionId;
+}
+
+export async function saveKeyPairToStorage() {
+  if (!rsaKeyPair) return;
+
+  const privateKeyBuffer = await crypto.subtle.exportKey('pkcs8', rsaKeyPair.privateKey);
+  const publicKeyBuffer = await crypto.subtle.exportKey('spki', rsaKeyPair.publicKey);
+
+  localStorage.setItem('rsaPrivateKey', btoa(String.fromCharCode(...new Uint8Array(privateKeyBuffer))));
+  localStorage.setItem('rsaPublicKey', btoa(String.fromCharCode(...new Uint8Array(publicKeyBuffer))));
+}
+
+export async function loadKeyPairFromStorage() {
+  const privB64 = localStorage.getItem('rsaPrivateKey');
+  const pubB64 = localStorage.getItem('rsaPublicKey');
+
+  if (!privB64 || !pubB64) return null;
+
+  const privBuffer = Uint8Array.from(atob(privB64), c => c.charCodeAt(0));
+  const pubBuffer = Uint8Array.from(atob(pubB64), c => c.charCodeAt(0));
+
+  const privateKey = await crypto.subtle.importKey(
+    'pkcs8',
+    privBuffer,
+    { name: 'RSA-OAEP', hash: 'SHA-256' },
+    true,
+    ['decrypt']
+  );
+
+  const publicKey = await crypto.subtle.importKey(
+    'spki',
+    pubBuffer,
+    { name: 'RSA-OAEP', hash: 'SHA-256' },
+    true,
+    ['encrypt']
+  );
+
+  rsaKeyPair = { privateKey, publicKey };
+  return rsaKeyPair;
+}
+
+function storeAESKey(aesKey: Uint8Array) {
+  localStorage.setItem('aesKey', btoa(String.fromCharCode(...aesKey)));
+}
+
+function loadAESKey(): Uint8Array | null {
+  const b64 = localStorage.getItem('aesKey');
+  if (!b64) return null;
+  return Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+}
+
+export async function restoreCryptoState() {
+  await loadKeyPairFromStorage();
+
+  const storedAESKey = loadAESKey();
+  if (storedAESKey) {
+    aesKey = storedAESKey;
+  }
+
+  const storedSessionId = localStorage.getItem('sessionId');
+  if (storedSessionId) {
+    sessionId = storedSessionId;
+  }
+}
+export function clearCryptoSession() {
+  localStorage.removeItem('rsaPrivateKey');
+  localStorage.removeItem('rsaPublicKey');
+  localStorage.removeItem('aesKey');
+  localStorage.removeItem('sessionId');
+  localStorage.removeItem('user');
+
+  rsaKeyPair = null;
+  aesKey = null;
+  sessionId = null;
 }
