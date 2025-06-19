@@ -27,10 +27,8 @@ api.interceptors.request.use(
 
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
-        console.log('Token ajouté à la requête pour:', config.url);
-      } else {
-        console.log('Aucun token trouvé, requête envoyée sans Authorization pour:', config.url);
       }
+
       if (sessionId) {
         config.headers['x-session-id'] = sessionId;
       } else {

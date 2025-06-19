@@ -29,7 +29,4 @@ function dragonColor(rarete: string) {
       <p class="text-md font-semibold uppercase text-gray-800">{{ props.dragon.nom }}</p>
     </div>
   </div>
-
 </template>
-
-<style scoped></style>

@@ -19,7 +19,6 @@ async function register() {
 
     try {
         await authStore.register(username.value, password.value);
-        console.log('Compte créé avec succès');
     } catch (e: ErrorResponse | any) {
         if (e.statusCode === 409) {
             usernameError.value = e.message;

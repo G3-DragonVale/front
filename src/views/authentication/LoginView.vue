@@ -12,7 +12,6 @@ const error = ref<string>('');
 async function login() {
     try {
         await authStore.login(username.value, password.value);
-        console.log('Connexion avec succès');
     } catch (e: any) {
         error.value = 'Nom d’utilisateur et/ou mot de passe incorrect';
         console.error(e);
