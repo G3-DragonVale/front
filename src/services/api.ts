@@ -88,10 +88,9 @@ api.interceptors.response.use(
 
   },
   (error) => {
-    if (error.response && error.response.status === 401) {
+    if (error.response && (error.response.status === 401 || error.response.status === 500)) {
       const auth = useAuthStore();
       auth.logout();
-      window.location.href = '/login';
     }
     return Promise.reject(error);
   }

@@ -35,29 +35,33 @@ function chunkString(str: string, size: number): string {
 }
 
 export async function performHandshake(api: any): Promise<void> {
-  await loadKeyPairFromStorage();
-  if (!rsaKeyPair) await generateRSAKeyPair();
-  if (!sessionId) {
-    await generateSessionId();
+  try {
+    await loadKeyPairFromStorage();
+    if (!rsaKeyPair) await generateRSAKeyPair();
+    if (!sessionId) await generateSessionId();
+
+    localStorage.setItem('sessionId', sessionId!);
+    const publicKeyPem = await exportPublicKey();
+    const response = await api.post('/handshake', {
+      publicKey: publicKeyPem,
+      sessionId,
+    });
+
+    const encryptedKeyBase64 = response.aesKey;
+    const encryptedKeyBuffer = Uint8Array.from(atob(encryptedKeyBase64), c => c.charCodeAt(0));
+
+    const decrypted = await crypto.subtle.decrypt(
+      { name: "RSA-OAEP" },
+      rsaKeyPair!.privateKey,
+      encryptedKeyBuffer
+    );
+
+    aesKey = new Uint8Array(decrypted);
+    storeAESKey(aesKey);
+  } catch (error) {
+    console.error("Error during handshake:", error);
+    throw error;
   }
-  localStorage.setItem('sessionId', sessionId!);
-  const publicKeyPem = await exportPublicKey();
-  const response = await api.post('/handshake', {
-    publicKey: publicKeyPem,
-    sessionId,
-  });
-
-  const encryptedKeyBase64 = response.aesKey;
-  const encryptedKeyBuffer = Uint8Array.from(atob(encryptedKeyBase64), c => c.charCodeAt(0));
-
-  const decrypted = await crypto.subtle.decrypt(
-    { name: "RSA-OAEP" },
-    rsaKeyPair!.privateKey,
-    encryptedKeyBuffer
-  );
-
-  aesKey = new Uint8Array(decrypted);
-  storeAESKey(aesKey);
 }
 
 export function getAESKey(): Uint8Array | null {

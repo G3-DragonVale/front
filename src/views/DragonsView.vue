@@ -18,7 +18,7 @@ onMounted(async () => {
         <h2 class="text-xl font-semibold mb-4">Mes dragons</h2>
 
         <div v-if="!dragonStore.isError">
-            <div v-if="dragonStore.userDragons"
+            <div v-if="dragonStore.userDragons && dragonStore.userDragons.length">
                 class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
                 <div v-for="dragon in dragonStore.userDragons" :key="dragon.id">
                     <DragonCard :dragon="dragon" />
@@ -26,7 +26,7 @@ onMounted(async () => {
             </div>
 
             <div v-else class="mt-4 text-center font-medium">
-                <p>Aucun dragon trouvé !</p>
+                <p>Aucun dragon trouvé</p>
             </div>
         </div>
 

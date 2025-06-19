@@ -31,6 +31,7 @@ export const useAuthStore = defineStore('auth', () => {
         if (newToken) {
             localStorage.setItem(AUTH_TOKEN_KEY, newToken);
         } else {
+            token.value = null;
             localStorage.removeItem(AUTH_TOKEN_KEY);
         }
     }
@@ -41,6 +42,7 @@ export const useAuthStore = defineStore('auth', () => {
         if (newUser) {
             localStorage.setItem('user', JSON.stringify(newUser));
         } else {
+            user.value = null;
             localStorage.removeItem('user');
         }
     }
@@ -50,6 +52,7 @@ export const useAuthStore = defineStore('auth', () => {
         error.value = null;
 
         try {
+            await performHandshake(apiService);
             await apiService.post('/auth/register', { nickname: username, mdp: password });
             await login(username, password);
         } catch (e: any) {
@@ -70,6 +73,7 @@ export const useAuthStore = defineStore('auth', () => {
             setToken(data.access_token);
             setUser(data.user);
         } catch (e: any) {
+            console.log(e);
             error.value = e?.response?.data || null;
             throw error.value;
         } finally {
@@ -80,7 +84,7 @@ export const useAuthStore = defineStore('auth', () => {
 
     function logout() {
         setToken(null);
-        user.value = null;
+        setUser(null);
         clearCryptoSession();
         router.push('/login');
     }
