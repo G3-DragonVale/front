@@ -1,11 +1,11 @@
 import { useAuthStore } from '@/stores/auth';
-import { getAESKey, performHandshake } from '@/utils/cryptoSession';
+import { getAESKey, performHandshake, restoreCryptoState } from '@/utils/cryptoSession';
 import axios, { type AxiosRequestConfig, type InternalAxiosRequestConfig } from 'axios';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL as string;
 
 const api = axios.create({
-  baseURL: API_BASE_URL || 'http://localhost:3001',
+  baseURL: API_BASE_URL || '/api',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -22,6 +22,8 @@ const AUTH_TOKEN_KEY = 'userToken';
 api.interceptors.request.use(
   async (config): Promise<InternalAxiosRequestConfig> => {
     try {
+      await restoreCryptoState();
+
       const token = localStorage.getItem(AUTH_TOKEN_KEY) || null;
       const sessionId = localStorage.getItem('sessionId') || null;
 

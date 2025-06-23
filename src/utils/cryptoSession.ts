@@ -37,7 +37,10 @@ function chunkString(str: string, size: number): string {
 export async function performHandshake(api: any): Promise<void> {
   try {
     await loadKeyPairFromStorage();
-    if (!rsaKeyPair) await generateRSAKeyPair();
+    if (!rsaKeyPair) {
+      await generateRSAKeyPair();
+      await saveKeyPairToStorage();
+    }
     if (!sessionId) await generateSessionId();
 
     localStorage.setItem('sessionId', sessionId!);
