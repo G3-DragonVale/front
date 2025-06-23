@@ -50,8 +50,6 @@ export async function performHandshake(api: any): Promise<void> {
       sessionId,
     });
 
-    console.log("Handshake response:", response);
-
     const encryptedKeyBase64 = response.aesKey;
     const encryptedKeyBuffer = Uint8Array.from(atob(encryptedKeyBase64), c => c.charCodeAt(0));
 

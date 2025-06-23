@@ -73,7 +73,6 @@ export const useAuthStore = defineStore('auth', () => {
             setToken(data.access_token);
             setUser(data.user);
         } catch (e: any) {
-            console.log(e);
             error.value = e?.response?.data || null;
             throw error.value;
         } finally {

@@ -32,10 +32,8 @@ api.interceptors.request.use(
       }
 
       if (sessionId) {
-        console.log('Using existing session ID:', sessionId);
         config.headers['x-session-id'] = sessionId;
       } else {
-        console.log('Performing handshake to retrieve session ID');
         await performHandshake(apiService);
       }
     } catch (error) {
@@ -55,13 +53,10 @@ api.interceptors.response.use(
     const data = response.data;
     if (data && data.encrypted && data.data) {
       const aesKey = getAESKey();
-      console.log(data);
 
       if (!aesKey) {
         return response;
       }
-
-      console.log('Frontend AES key:', btoa(String.fromCharCode(...aesKey)), 'Length:', aesKey.length);
 
       try {
         const payload = JSON.parse(data.data); // { iv, data }
