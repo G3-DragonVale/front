@@ -37,7 +37,10 @@ function chunkString(str: string, size: number): string {
 export async function performHandshake(api: any): Promise<void> {
   try {
     await loadKeyPairFromStorage();
-    if (!rsaKeyPair) await generateRSAKeyPair();
+    if (!rsaKeyPair) {
+      await generateRSAKeyPair();
+      await saveKeyPairToStorage();
+    }
     if (!sessionId) await generateSessionId();
 
     localStorage.setItem('sessionId', sessionId!);
@@ -46,6 +49,8 @@ export async function performHandshake(api: any): Promise<void> {
       publicKey: publicKeyPem,
       sessionId,
     });
+
+    console.log("Handshake response:", response);
 
     const encryptedKeyBase64 = response.aesKey;
     const encryptedKeyBuffer = Uint8Array.from(atob(encryptedKeyBase64), c => c.charCodeAt(0));
