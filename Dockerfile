@@ -5,18 +5,20 @@ WORKDIR /app
 
 COPY package*.json ./
 COPY .env ./
+
 RUN npm install
 
 COPY . .
+
+RUN rm -rf node_modules/.vite
+
 RUN npm run build
 
 # Production stage
 FROM nginx:alpine
 
-# Copy built assets
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Optional: Copy custom nginx config if needed
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
