@@ -3,6 +3,11 @@ enum Role {
     ADMIN = 'ADMIN'
 }
 
+export interface UserDragon {
+    userId: number,
+    dragonId: number,
+}
+
 export interface Dragon {
     id: number,
     nom: string,
